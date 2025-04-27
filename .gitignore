@@ -1,0 +1,119 @@
+
+# Sensitive configuration files
+src/main/resources/application.properties
+src/main/resources/application-*.properties
+src/main/resources/application.yml
+src/main/resources/application-*.yml
+*.properties
+!application.properties.template
+
+# Environment files
+.env
+*.env
+run.sh
+run.bat
+
+# Compiled files
+target/
+build/
+out/
+*.class
+
+# Log files
+*.log
+logs/
+log/
+
+# Package files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# Gradle
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# IDE - Eclipse
+.settings/
+.classpath
+.project
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+
+# IDE - VS Code
+.vscode/
+.code-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Java specific
+hs_err_pid*
+replay_pid*
+
+# Node (if using frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage reports
+coverage/
+*.cover
+.coverage
+.coverage.*
+
+# Documentation generated files
+docs/_build/
+javadoc/
+
+# Temp files
+temp/
+tmp/
+*.temp
+*.tmp
+
+# Spring Boot specific
+spring-boot-starter/
+.spring-boot-starter/
+application-local.properties
+application-dev.properties
+application-prod.properties
+application.properties
