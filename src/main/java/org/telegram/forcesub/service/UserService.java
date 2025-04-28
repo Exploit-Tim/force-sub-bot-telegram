@@ -1,6 +1,8 @@
 package org.telegram.forcesub.service;
 
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ import java.util.Set;
 @Service
 public class UserService {
 
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     @Getter
     private final Set<String> channelIds;
@@ -27,7 +30,7 @@ public class UserService {
 
 
     @Transactional
-    public String saveUser(String userId, String channelId) {
+    public void saveUser(String userId, String channelId) {
         try {
             Long expiredAt = Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli();
             User user = User.builder()
@@ -36,9 +39,9 @@ public class UserService {
                     .channelId(channelId)
                     .build();
             userRepository.save(user);
-            return "User saved successfully";
+            log.info("User saved successfully: {}", user.getChatId() + " " + user.getChannelId() + " " + user.getExpiredAt());
         } catch (Exception e) {
-            return "Error saving user";
+            System.err.println("Error saving user: " + e.getMessage());
         }
     }
 
@@ -56,18 +59,9 @@ public class UserService {
         return users.size();
     }
 
-    public boolean[] isExistAndExpired(String userId) {
-        boolean[] result = new boolean[channelIds.size()];
-        int i = 0;
-        for (String channel : channelIds) {
-            boolean expired = userRepository.existsByChatIdAndChannelIdAndExpiredAtBefore(userId, channel, Instant.now().toEpochMilli());
-            if (expired) {
-                deleteUser(userId, channel);
-            }
-            result[i++] = expired;
-        }
-
-        return result;
+    @Transactional
+    public boolean isUserExist(String userId, String channelId) {
+        return userRepository.existsByChatIdAndChannelIdAndExpiredAtAfter(userId, channelId, Instant.now().toEpochMilli());
     }
 
 }

@@ -4,8 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.forcesub.entity.Message;
 import org.telegram.forcesub.repository.MessageRepository;
-
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -18,16 +16,17 @@ public class MessageService {
     }
 
 
-    public List<String> getMessage(String uuid) {
-        return messageRepository.findByUuid(uuid).stream().toList();
+    public Message getMessage(String uuid) {
+        return messageRepository.findByUuid(uuid);
     }
 
     @Transactional
-    public String saveMessage(List<String> messageId) {
+    public String saveMessage(String messageId, String chatId) {
         String uuid = UUID.randomUUID().toString();
         Message message = Message.builder()
                 .uuid(uuid)
                 .messageId(messageId)
+                .chatId(chatId)
                 .build();
         try {
             messageRepository.save(message);
@@ -35,8 +34,5 @@ public class MessageService {
         } catch (Exception e) {
             return "Error saving message";
         }
-    }
-    public Long countAllMessage() {
-        return messageRepository.count();
     }
 }

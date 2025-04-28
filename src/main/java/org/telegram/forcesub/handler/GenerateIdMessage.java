@@ -2,22 +2,23 @@ package org.telegram.forcesub.handler;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.forcesub.utils.InlineKeyboardForDatabase;
+import org.telegram.forcesub.service.MessageService;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
 public class GenerateIdMessage implements CommandHandlerProcessor {
 
     private final String database;
-    private final InlineKeyboardForDatabase inlineKeyboardForDatabase;
+    private final MessageService messageService;
+    private final String botUsername;
 
-    public GenerateIdMessage(@Value("${data.message}") String database, InlineKeyboardForDatabase inlineKeyboardForDatabase) {
+    public GenerateIdMessage(@Value("${data.message}") String database, MessageService messageService, @Value("${bot.username}") String botUsername) {
         this.database = database;
-        this.inlineKeyboardForDatabase = inlineKeyboardForDatabase;
+        this.messageService = messageService;
+        this.botUsername = botUsername;
     }
 
 
@@ -36,7 +37,8 @@ public class GenerateIdMessage implements CommandHandlerProcessor {
         log.info("Get Message");
         return CompletableFuture.runAsync(() -> {
             if (update.getMessage().getChatId().equals(Long.parseLong(database))){
-                replyMessageSendId(update.getMessage().getChatId(), update.getMessage().getMessageId(), "DONE", inlineKeyboardForDatabase.getInlineKeyboardForDatabase(List.of(String.valueOf(update.getMessage().getMessageId()))), telegramClient);
+                String message = messageService.saveMessage(update.getMessage().getMessageId().toString(), update.getMessage().getChatId().toString());
+                replyMessageSendId(update.getMessage().getChatId(), update.getMessage().getMessageId() ,String.format("https://t.me/%s?start=%s", botUsername, message), telegramClient);
             }
         });
     }

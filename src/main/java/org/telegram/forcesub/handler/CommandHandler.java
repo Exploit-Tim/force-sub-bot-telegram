@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
@@ -25,10 +26,31 @@ public class CommandHandler {
 
     @Async
     public CompletableFuture<Void> handle(Update update, TelegramClient telegramClient) {
-        CommandHandlerProcessor commandHandlerProcessor = commandMap.getOrDefault(update.getMessage().getText().split(" ")[0], commandMap.get("/"));
-        commandHandlerProcessor.process(update, telegramClient);
-        commandHandlerProcessor.process(update.getMessage().getChatId(), update.getMessage().getText(), telegramClient);
-        return CompletableFuture.completedFuture(null);
+        if (update.hasMessage()) {
+            Message message = update.getMessage();
+            log.info("Received message: {}", message.getText());
+            CommandHandlerProcessor commandHandlerProcessor;
 
+            if (message.hasText()) {
+                String commandKey = message.getText().split(" ")[0];
+                commandHandlerProcessor = commandMap.getOrDefault(commandKey, commandMap.get("/"));
+                commandHandlerProcessor.process(update, telegramClient);
+                commandHandlerProcessor.process(message.getChatId(), message.getText(), telegramClient);
+            } else if (message.hasVideo() || message.hasPhoto() || message.hasDocument()) {
+                commandHandlerProcessor = commandMap.getOrDefault("/", commandMap.get("/"));
+                commandHandlerProcessor.process(update, telegramClient);
+            } else if (message.hasLocation()) {
+                // Kalau kamu juga mau handle location (goto mungkin maksudnya)
+                commandHandlerProcessor = commandMap.getOrDefault("/location", commandMap.get("/"));
+                commandHandlerProcessor.process(update, telegramClient);
+            } else {
+                log.info("Unsupported message type: {}", message);
+            }
+        } else {
+            log.info("Unsupported update type: {}", update);
+        }
+
+        return CompletableFuture.completedFuture(null);
     }
+
 }

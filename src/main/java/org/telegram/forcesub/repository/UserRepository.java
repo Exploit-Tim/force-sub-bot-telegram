@@ -6,8 +6,8 @@ import org.telegram.forcesub.entity.User;
 
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {
-    boolean existsByChatIdAndChannelIdAndExpiredAtBefore(String chatId, String channelId, Long expiredAt);
-    boolean existsByChatIdAndChannelId(String chatId, String channelId);
+
+    boolean existsByChatIdAndChannelIdAndExpiredAtAfter(String chatId, String channelId, Long expiredAtAfter);
 
     void deleteByChatIdAndChannelId(String chatId, String channelId);
 }

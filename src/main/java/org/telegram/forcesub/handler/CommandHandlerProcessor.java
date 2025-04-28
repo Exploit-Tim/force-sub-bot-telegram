@@ -35,10 +35,10 @@ public interface CommandHandlerProcessor {
             log.info(e.getMessage());
         }
     }
-    default void copyMessage(Long fromChatId, Integer messageId, Long toChatId, TelegramClient bot) {
+    default void copyMessage(String fromChatId, String messageId, Long toChatId, TelegramClient bot) {
         CopyMessage copy = CopyMessage.builder()
                 .fromChatId(fromChatId)
-                .messageId(messageId)
+                .messageId(Integer.parseInt(messageId))
                 .chatId(toChatId)
                 .build();
         try {
@@ -47,17 +47,28 @@ public interface CommandHandlerProcessor {
             log.info("Error copying message: {}", e.getMessage());
         }
     }
-    default void replyMessageSendId(long chatId, long messageId, String text, InlineKeyboardMarkup markup, TelegramClient telegramClient) {
+    default void replyMessageSendId(long chatId, long messageId, String text, TelegramClient telegramClient) {
         try {
             SendMessage message = SendMessage.builder()
                     .chatId(chatId)
-                    .replyMarkup(markup)
                     .text(text)
-                    .parseMode("Markdown")
+                    .replyToMessageId((int) messageId)
                     .build();
             telegramClient.execute(message);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+    default void sendMessageWithMarkup(Long chatId, String text, InlineKeyboardMarkup markup, TelegramClient telegramClient) {
+        try {
+            telegramClient.execute(SendMessage.builder()
+                    .chatId(chatId)
+                    .replyMarkup(markup)
+                    .text(text)
+                    .parseMode("Markdown")
+                    .build());
+        } catch (TelegramApiException e) {
+            log.info(e.getMessage());
         }
     }
 

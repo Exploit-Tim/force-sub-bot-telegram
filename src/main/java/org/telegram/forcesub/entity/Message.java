@@ -4,7 +4,6 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
 
 @Getter
 @Setter
@@ -16,7 +15,9 @@ public class Message {
 
     @Id
     private String uuid;
-    private List<String> messageId;
+    private String messageId;
+    private String chatId;
+
 
 
 }
