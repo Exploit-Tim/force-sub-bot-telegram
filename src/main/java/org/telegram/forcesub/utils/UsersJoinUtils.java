@@ -47,7 +47,6 @@ public class UsersJoinUtils {
             return false;
         } else if (execute.equals("administrator") || execute.equals("member") || execute.equals("creator")){
             userService.deleteUser(chatId.toString(), channelId.toString());
-            userService.saveUser(chatId.toString(), channelId.toString());
             return true;
         } else {
             userService.deleteUser(chatId.toString(), channelId.toString());

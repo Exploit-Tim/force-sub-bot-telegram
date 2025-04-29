@@ -14,11 +14,16 @@ public class GenerateIdMessage implements CommandHandlerProcessor {
     private final String database;
     private final MessageService messageService;
     private final String botUsername;
+    private final String ownerUsername;
 
-    public GenerateIdMessage(@Value("${data.message}") String database, MessageService messageService, @Value("${bot.username}") String botUsername) {
+    public GenerateIdMessage(@Value("${data.message}") String database,
+                             MessageService messageService,
+                             @Value("${bot.username}") String botUsername,
+                             @Value("${owner.username}") String ownerUsername) {
         this.database = database;
         this.messageService = messageService;
         this.botUsername = botUsername;
+        this.ownerUsername = ownerUsername;
     }
 
 
@@ -36,7 +41,7 @@ public class GenerateIdMessage implements CommandHandlerProcessor {
     public CompletableFuture<Void> process(Update update, TelegramClient telegramClient) {
         log.info("Get Message");
         return CompletableFuture.runAsync(() -> {
-            if (update.getMessage().getChatId().equals(Long.parseLong(database))){
+            if (update.getMessage().getChatId().equals(Long.parseLong(database)) || update.getMessage().getChatId().equals(Long.parseLong(ownerUsername))){
                 String message = messageService.saveMessage(update.getMessage().getMessageId().toString(), update.getMessage().getChatId().toString());
                 replyMessageSendId(update.getMessage().getChatId(), update.getMessage().getMessageId() ,String.format("https://t.me/%s?start=%s", botUsername, message), telegramClient);
             }

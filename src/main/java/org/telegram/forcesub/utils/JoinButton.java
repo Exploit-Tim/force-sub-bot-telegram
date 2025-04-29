@@ -11,7 +11,7 @@ import java.util.List;
 @Component
 public class JoinButton {
 
-    public InlineKeyboardMarkup joinButton(List<String> channelIds) {
+    public InlineKeyboardMarkup joinButton(List<String> channelIds, String url) {
         List<InlineKeyboardRow> rows = new ArrayList<>();
         InlineKeyboardRow currentRow = new InlineKeyboardRow();
 
@@ -27,6 +27,13 @@ public class JoinButton {
                 currentRow = new InlineKeyboardRow();
             }
         }
+        InlineKeyboardRow urlButtonRow = new InlineKeyboardRow();
+        InlineKeyboardButton urlButton = InlineKeyboardButton.builder()
+                .text("Coba Lagi")
+                .url(url)
+                .build();
+        urlButtonRow.add(urlButton);
+        rows.add(urlButtonRow);
 
         return new InlineKeyboardMarkup(rows);
     }

@@ -119,7 +119,6 @@ public class PreRun {
     }
     public String getInviteLink(String channelId) {
         String url = "https://api.telegram.org/bot" + botToken + "/exportChatInviteLink?chat_id=" + channelId;
-
         ResponseEntity<Map> response =
                 restTemplateBuilder.build().getForEntity(url, Map.class);
         if (response.getStatusCode() == HttpStatus.OK && Boolean.TRUE.equals(response.getBody().get("ok"))) {

@@ -23,3 +23,7 @@ owner.userid=
 channel.id=
 bot.id=
 data.message=
+
+start.message.not.join=
+start.message.after.join=
+help.message=

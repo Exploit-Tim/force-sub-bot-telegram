@@ -11,32 +11,34 @@ import org.telegram.forcesub.service.SubscriptionService;
 import org.telegram.forcesub.utils.JoinButton;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Component
 public class StartCommand implements CommandHandlerProcessor {
+
+    private static final Logger log = LoggerFactory.getLogger(StartCommand.class);
 
     private final SubscriptionService subscriptionService;
     private final GetChannelLinkService getChannelLinkService;
     private final JoinButton joinButton;
     private final String botUsername;
     private final String ownerUsername;
-
     private final MessageService messageService;
     private final MessageTextService messageTextService;
 
     public StartCommand(MessageService messageService,
-                        SubscriptionService subscriptionService1,
+                        SubscriptionService subscriptionService,
                         GetChannelLinkService getChannelLinkService,
                         JoinButton joinButton,
                         @Value("${bot.username}") String botUsername,
-                        @Value("${owner.username}") String ownerUsername, MessageTextService messageTextService) {
+                        @Value("${owner.username}") String ownerUsername,
+                        MessageTextService messageTextService) {
         this.messageService = messageService;
-        this.subscriptionService = subscriptionService1;
+        this.subscriptionService = subscriptionService;
         this.getChannelLinkService = getChannelLinkService;
         this.joinButton = joinButton;
         this.botUsername = botUsername;
@@ -57,56 +59,65 @@ public class StartCommand implements CommandHandlerProcessor {
     @Override
     public CompletableFuture<Void> process(Update update, TelegramClient telegramClient) {
         return CompletableFuture.runAsync(() -> {
-            if (update.getMessage().getText().equals("/start")){
-                sendMessage(update.getMessage().getChatId(), replacePlaceHolder(MessageInformation.WELCOME, update), telegramClient);
+            String messageText = update.getMessage().getText();
+            Long chatId = update.getMessage().getChatId();
+
+            if ("/start".equals(messageText)) {
+                sendHelpMessage(chatId, update, telegramClient);
                 return;
             }
-            Message message = messageService.getMessage(update.getMessage().getText().replace("/start", "").trim());
-            if (message == null) {
-                sendMessage(update.getMessage().getChatId(), "Kosong", telegramClient);
-                return;
-            }
-            List<String> unsubcriptionUser = subscriptionService.getUnsubcriptionUser(String.valueOf(update.getMessage().getChatId()));
-            for (String channel : unsubcriptionUser) {
-                log.info("Unsubcription User: {}", channel);
-            }
-            List<String> channelLinks = getChannelLinkService.getChannelLinks(unsubcriptionUser);
-            log.info("Channel Links: {}", channelLinks.size());
-            if (!channelLinks.isEmpty()) {
-                log.info("Channel Links: {}", channelLinks);
-                String s = replacePlaceHolder(MessageInformation.START, update);
-                log.info("Replace Placeholder: {}", s);
-                sendMessageWithMarkup(update.getMessage().getChatId(), s, joinButton.joinButton(channelLinks), telegramClient);
-                return;
-            }
-            log.info("Message: {}", message);
-            copyMessage(message.getChatId(), message.getMessageId(), update.getMessage().getChatId(), telegramClient);
+
+            handleStartWithPayload(chatId, messageText, update, telegramClient);
         });
     }
-    public String replacePlaceHolder(MessageInformation messageInformation, Update update) {
-        Map<String, String> field = new HashMap<>();
 
-        String username = update.getMessage().getChat().getUserName();
-        String firstName = update.getMessage().getChat().getFirstName();
-        String lastName = update.getMessage().getChat().getLastName();
+    private void sendHelpMessage(Long chatId, Update update, TelegramClient telegramClient) {
+        String helpText = replacePlaceholders(MessageInformation.HELP, update);
+        sendMessage(chatId, helpText, telegramClient);
+    }
 
-        field.put("{username}", username != null ? username : "");
-        field.put("{userid}", update.getMessage().getChat().getId().toString());
-        field.put("{firstname}", firstName != null ? firstName.trim() : "");
-        field.put("{lastname}", lastName != null ? lastName.trim() : "");
-        field.put("{botusername}", botUsername);
-        field.put("{ownerusername}", "https://t.me/" + ownerUsername);
+    private void handleStartWithPayload(Long chatId, String messageText, Update update, TelegramClient telegramClient) {
+        String payload = messageText.replace("/start", "").trim();
+        Message message = messageService.getMessage(payload);
 
-        log.info("Field: {}", field);
-        String text = messageTextService.getMessageText(messageInformation);
-        log.info("Text: {}", text);
-
-        for (Map.Entry<String, String> entry : field.entrySet()) {
-            String key = entry.getKey();
-            text = text.replace(key, entry.getValue());
+        if (message == null) {
+            sendMessage(chatId, "Kosong", telegramClient);
+            return;
         }
 
-        log.info("Text: {}", text);
-        return text;
+        List<String> unsubscribedChannels = subscriptionService.getUnsubcriptionUser(chatId.toString());
+        unsubscribedChannels.forEach(channel -> log.info("Unsubscribed User: {}", channel));
+
+        List<String> channelLinks = getChannelLinkService.getChannelLinks(unsubscribedChannels);
+        log.info("Found {} unsubscribed channel links", channelLinks.size());
+
+        if (!channelLinks.isEmpty()) {
+            String formattedText = replacePlaceholders(MessageInformation.START, update);
+            String startUrl = String.format("https://t.me/%s?start=%s", botUsername, payload);
+            sendMessageWithMarkup(chatId, formattedText, joinButton.joinButton(channelLinks, startUrl), telegramClient);
+        } else {
+            copyMessage(message.getChatId(), message.getMessageId(), chatId, telegramClient);
+        }
+    }
+
+    private String replacePlaceholders(MessageInformation messageInfo, Update update) {
+        Map<String, String> fields = new HashMap<>();
+
+        var chat = update.getMessage().getChat();
+        fields.put("{username}", Optional.ofNullable(chat.getUserName()).orElse(""));
+        fields.put("{userid}", chat.getId().toString());
+        fields.put("{firstname}", Optional.ofNullable(chat.getFirstName()).orElse("").trim());
+        fields.put("{lastname}", Optional.ofNullable(chat.getLastName()).orElse("").trim());
+        fields.put("{botusername}", botUsername);
+        fields.put("{ownerusername}", "https://t.me/" + ownerUsername);
+
+        String template = messageTextService.getMessageText(messageInfo);
+        log.info("Replacing placeholders in: {}", template);
+
+        for (Map.Entry<String, String> entry : fields.entrySet()) {
+            template = template.replace(entry.getKey(), entry.getValue());
+        }
+
+        return template;
     }
 }
