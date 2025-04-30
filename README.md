@@ -74,29 +74,34 @@ Buat file `src/main/resources/application.properties` dengan isi berikut:
 ```properties
 # Telegram Bot Config
 
+spring.application.name=Telegram Bot Force Sub
+
+# MongoDB URI with improved configuration
+spring.data.mongodb.uri=
+
+# Connection settings
+spring.data.mongodb.connection-pool-max-wait-time=20000
+spring.data.mongodb.connect-timeout=10000
+spring.data.mongodb.socket-timeout=20000
+spring.data.mongodb.max-connection-idle-time=60000
+spring.data.mongodb.retry-writes=true
+
+# MongoDB connection pool settings
+spring.data.mongodb.connection-pool-min-size=5
+spring.data.mongodb.connection-pool-max-size=10
+
+
 bot.token=
 bot.username=
 owner.username=
 owner.userid=
-channel.id= {Pisahkan dengan koma tanpa spasi}
+channel.id=
 bot.id=
-data.message= {database channel}
+data.message=
 
-# MySQL Database Config
-spring.datasource.url=jdbc:mysql://localhost:3306/force_sub
-spring.datasource.username=your_db_user
-spring.datasource.password=your_db_password
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
-# JPA Config
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-
-# Message Config
 start.message.not.join=
 start.message.after.join=
 help.message=
-
 
 ```
 
