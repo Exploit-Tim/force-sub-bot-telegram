@@ -6,9 +6,9 @@ import org.telegram.forcesub.entity.Message;
 import org.telegram.forcesub.entity.MessageInformation;
 import org.telegram.forcesub.service.GetChannelLinkService;
 import org.telegram.forcesub.service.MessageService;
-import org.telegram.forcesub.service.MessageTextService;
 import org.telegram.forcesub.service.SubscriptionService;
 import org.telegram.forcesub.utils.JoinButton;
+import org.telegram.forcesub.utils.MappingText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import org.slf4j.Logger;
@@ -26,24 +26,21 @@ public class StartCommand implements CommandHandlerProcessor {
     private final GetChannelLinkService getChannelLinkService;
     private final JoinButton joinButton;
     private final String botUsername;
-    private final String ownerUsername;
     private final MessageService messageService;
-    private final MessageTextService messageTextService;
+    private final MappingText mappingText;
 
     public StartCommand(MessageService messageService,
                         SubscriptionService subscriptionService,
                         GetChannelLinkService getChannelLinkService,
                         JoinButton joinButton,
                         @Value("${bot.username}") String botUsername,
-                        @Value("${owner.username}") String ownerUsername,
-                        MessageTextService messageTextService) {
+                        MappingText mappingText) {
         this.messageService = messageService;
         this.subscriptionService = subscriptionService;
         this.getChannelLinkService = getChannelLinkService;
         this.joinButton = joinButton;
         this.botUsername = botUsername;
-        this.ownerUsername = ownerUsername;
-        this.messageTextService = messageTextService;
+        this.mappingText = mappingText;
     }
 
     @Override
@@ -72,7 +69,7 @@ public class StartCommand implements CommandHandlerProcessor {
     }
 
     private void sendHelpMessage(Long chatId, Update update, TelegramClient telegramClient) {
-        String helpText = replacePlaceholders(MessageInformation.HELP, update);
+        String helpText = mappingText.replacePlaceholders(MessageInformation.HELP, update);
         sendMessage(chatId, helpText, telegramClient);
     }
 
@@ -92,7 +89,7 @@ public class StartCommand implements CommandHandlerProcessor {
         log.info("Found {} unsubscribed channel links", channelLinks.size());
 
         if (!channelLinks.isEmpty()) {
-            String formattedText = replacePlaceholders(MessageInformation.START, update);
+            String formattedText = mappingText.replacePlaceholders(MessageInformation.START, update);
             String startUrl = String.format("https://t.me/%s?start=%s", botUsername, payload);
             sendMessageWithMarkup(chatId, formattedText, joinButton.joinButton(channelLinks, startUrl), telegramClient);
         } else {
@@ -100,24 +97,5 @@ public class StartCommand implements CommandHandlerProcessor {
         }
     }
 
-    private String replacePlaceholders(MessageInformation messageInfo, Update update) {
-        Map<String, String> fields = new HashMap<>();
 
-        var chat = update.getMessage().getChat();
-        fields.put("{username}", Optional.ofNullable(chat.getUserName()).orElse(""));
-        fields.put("{userid}", chat.getId().toString());
-        fields.put("{firstname}", Optional.ofNullable(chat.getFirstName()).orElse("").trim());
-        fields.put("{lastname}", Optional.ofNullable(chat.getLastName()).orElse("").trim());
-        fields.put("{botusername}", botUsername);
-        fields.put("{ownerusername}", "https://t.me/" + ownerUsername);
-
-        String template = messageTextService.getMessageText(messageInfo);
-        log.info("Replacing placeholders in: {}", template);
-
-        for (Map.Entry<String, String> entry : fields.entrySet()) {
-            template = template.replace(entry.getKey(), entry.getValue());
-        }
-
-        return template;
-    }
 }

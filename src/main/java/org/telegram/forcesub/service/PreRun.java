@@ -1,14 +1,10 @@
 
 package org.telegram.forcesub.service;
 
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.event.EventListener;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.telegram.forcesub.entity.Subcription;
 import org.telegram.forcesub.repository.SubscriptionRepository;
@@ -33,25 +29,23 @@ public class PreRun {
     private static final int MAX_RETRIES = 3;
     private static final long RETRY_DELAY = 5000; // 5 seconds
     private final SubscriptionRepository subscriptionRepository;
-    private final String botToken;
-    private final RestTemplateBuilder restTemplateBuilder;
+    private final SubscriptionService subscriptionService;
 
     public PreRun(UserService userService, @Value("${bot.id}") String botUsername,
                   UsersJoinUtils usersJoinUtils, TelegramClient telegramClient,
                   @Value("${data.message}") String database,
                   SubscriptionRepository subscriptionRepository,
-                  @Value("${bot.token}") String botToken, RestTemplateBuilder restTemplateBuilder1) {
+                  SubscriptionService subscriptionService) {
         this.userService = userService;
         this.botId = Long.parseLong(botUsername);
         this.usersJoinUtils = usersJoinUtils;
         this.telegramClient = telegramClient;
         this.database = database;
         this.subscriptionRepository = subscriptionRepository;
-        this.botToken = botToken;
-        this.restTemplateBuilder = restTemplateBuilder1;
+        this.subscriptionService = subscriptionService;
     }
 
-    @EventListener(ApplicationReadyEvent.class)
+    @PostConstruct
     public void preRun() {
         log.info("Starting Bot Configuration...");
         List<String> missingChannels = new ArrayList<>();
@@ -106,7 +100,7 @@ public class PreRun {
         Map<String, String > channelLinks = new HashMap<>();
         List<String> channelId = new ArrayList<>(userService.getChannelIds().stream().toList());
         for (String s : channelId) {
-            channelLinks.put(s, getInviteLink(s));
+            channelLinks.put(s, subscriptionService.getInviteLink(s));
         }
         List<Subcription> subcriptions = channelLinks.entrySet().stream()
                 .map(entry -> {
@@ -117,15 +111,5 @@ public class PreRun {
                 }).toList();
         subscriptionRepository.saveAll(subcriptions);
     }
-    public String getInviteLink(String channelId) {
-        String url = "https://api.telegram.org/bot" + botToken + "/exportChatInviteLink?chat_id=" + channelId;
-        ResponseEntity<Map> response =
-                restTemplateBuilder.build().getForEntity(url, Map.class);
-        if (response.getStatusCode() == HttpStatus.OK && Boolean.TRUE.equals(response.getBody().get("ok"))) {
-            return (String) response.getBody().get("result");
-        } else {
-            log.error("Failed to get invite link for channel {}: {}", channelId, response.getStatusCode());
-            return null;
-        }
-    }
+
 }

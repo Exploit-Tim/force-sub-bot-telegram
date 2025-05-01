@@ -1,6 +1,7 @@
 # 🔒 Force Subscribe Telegram Bot (Java + Spring Boot)
 
-Bot Telegram berbasis Java Spring Boot yang mewajibkan pengguna untuk bergabung ke channel sebelum mengakses konten atau fitur tertentu. Cocok untuk admin channel yang ingin meningkatkan jumlah subscriber secara otomatis.
+Bot Telegram berbasis Java Spring Boot yang mewajibkan pengguna untuk bergabung ke channel sebelum mengakses konten atau
+fitur tertentu. Cocok untuk admin channel yang ingin meningkatkan jumlah subscriber secara otomatis.
 
 ---
 
@@ -73,24 +74,18 @@ Buat file `src/main/resources/application.properties` dengan isi berikut:
 
 ```properties
 # Telegram Bot Config
-
 spring.application.name=Telegram Bot Force Sub
-
 # MongoDB URI with improved configuration
 spring.data.mongodb.uri=
-
 # Connection settings
 spring.data.mongodb.connection-pool-max-wait-time=20000
 spring.data.mongodb.connect-timeout=10000
 spring.data.mongodb.socket-timeout=20000
 spring.data.mongodb.max-connection-idle-time=60000
 spring.data.mongodb.retry-writes=true
-
 # MongoDB connection pool settings
 spring.data.mongodb.connection-pool-min-size=5
 spring.data.mongodb.connection-pool-max-size=10
-
-
 bot.token=
 bot.username=
 owner.username=
@@ -98,7 +93,6 @@ owner.userid=
 channel.id=
 bot.id=
 data.message=
-
 start.message.not.join=
 start.message.after.join=
 help.message=
@@ -133,14 +127,14 @@ java -jar target/force-sub-bot-telegram.jar
 
 ## 🔧 Placeholder Pesan
 
-| Placeholder       | Deskripsi                           |
-|-------------------|-------------------------------------|
-| `{username}`      | Username Telegram user              |
-| `{firstname}`     | Nama depan user                     |
-| `{lastname}`      | Nama belakang user                  |
-| `{userid}`        | ID Telegram user                    |
-| `{botusername}`   | Username bot                        |
-| `{ownerusername}` | Username owner (dalam bentuk tautan)|
+| Placeholder       | Deskripsi                            |
+|-------------------|--------------------------------------|
+| `{username}`      | Username Telegram user               |
+| `{firstname}`     | Nama depan user                      |
+| `{lastname}`      | Nama belakang user                   |
+| `{userid}`        | ID Telegram user                     |
+| `{botusername}`   | Username bot                         |
+| `{ownerusername}` | Username owner (dalam bentuk tautan) |
 
 Gunakan dalam application.properties
 

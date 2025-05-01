@@ -15,17 +15,20 @@ public class MessageTextService {
     private final String startNotJoin;
     private final String startJoin;
     private final String startWelcome;
+    private final String aboutMessage;
 
     public MessageTextService(
             MessageTextRepository messageTextRepository,
             @Value("${start.message.not.join}") String startNotJoin,
             @Value("${start.message.after.join}") String startJoin,
-            @Value("${help.message}") String startWelcome
+            @Value("${help.message}") String startWelcome,
+            @Value("${help.message}") String aboutMessage
     ) {
         this.messageTextRepository = messageTextRepository;
         this.startNotJoin = startNotJoin;
         this.startJoin = startJoin;
         this.startWelcome = startWelcome;
+        this.aboutMessage = aboutMessage;
     }
 
     public void saveMessageText(MessageInformation messageInformation, String text) {
@@ -53,9 +56,9 @@ public class MessageTextService {
     @EventListener(ApplicationReadyEvent.class)
     public void setUpMessageText() {
         messageTextRepository.deleteAll();
-
         saveMessageText(MessageInformation.START, startNotJoin);
         saveMessageText(MessageInformation.WELCOME, startWelcome);
         saveMessageText(MessageInformation.HELP, startJoin);
+        saveMessageText(MessageInformation.ABOUT, aboutMessage);
     }
 }

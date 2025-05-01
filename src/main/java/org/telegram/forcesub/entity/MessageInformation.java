@@ -5,6 +5,7 @@ public enum MessageInformation {
 
     WELCOME,
     HELP,
-    START
+    START,
+    ABOUT
 
 }
