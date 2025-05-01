@@ -39,10 +39,6 @@ public class CommandHandler {
             } else if (message.hasVideo() || message.hasPhoto() || message.hasDocument()) {
                 commandHandlerProcessor = commandMap.getOrDefault("/", commandMap.get("/"));
                 commandHandlerProcessor.process(update, telegramClient);
-            } else if (message.hasLocation()) {
-                // Kalau kamu juga mau handle location (goto mungkin maksudnya)
-                commandHandlerProcessor = commandMap.getOrDefault("/location", commandMap.get("/"));
-                commandHandlerProcessor.process(update, telegramClient);
             } else {
                 log.info("Unsupported message type: {}", message);
             }

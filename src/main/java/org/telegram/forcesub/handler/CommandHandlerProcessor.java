@@ -53,6 +53,7 @@ public interface CommandHandlerProcessor {
                     .chatId(chatId)
                     .text(text)
                     .replyToMessageId((int) messageId)
+                    .parseMode("Markdown")
                     .build();
             telegramClient.execute(message);
         } catch (Exception e) {

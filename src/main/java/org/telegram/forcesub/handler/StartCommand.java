@@ -75,9 +75,9 @@ public class StartCommand implements CommandHandlerProcessor {
 
     private void handleStartWithPayload(Long chatId, String messageText, Update update, TelegramClient telegramClient) {
         String payload = messageText.replace("/start", "").trim();
-        Message message = messageService.getMessage(payload);
+        List<Message> messages = messageService.getAllMessages(payload);
 
-        if (message == null) {
+        if (messages.isEmpty()) {
             sendMessage(chatId, "Kosong", telegramClient);
             return;
         }
@@ -93,7 +93,11 @@ public class StartCommand implements CommandHandlerProcessor {
             String startUrl = String.format("https://t.me/%s?start=%s", botUsername, payload);
             sendMessageWithMarkup(chatId, formattedText, joinButton.joinButton(channelLinks, startUrl), telegramClient);
         } else {
-            copyMessage(message.getChatId(), message.getMessageId(), chatId, telegramClient);
+            // Process all messages in the list
+            messages.forEach(message -> {
+                log.info("Processing message: {}", message);
+                copyMessage(message.getChatId(), message.getMessageId(), chatId, telegramClient);
+            });
         }
     }
 
