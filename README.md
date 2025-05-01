@@ -34,7 +34,7 @@ fitur tertentu. Cocok untuk admin channel yang ingin meningkatkan jumlah subscri
 
 ```bash
 sudo apt update
-sudo apt install openjdk-17-jdk maven -y
+sudo apt install openjdk-21-jdk maven -y
 ```
 
 #### macOS (Homebrew)
