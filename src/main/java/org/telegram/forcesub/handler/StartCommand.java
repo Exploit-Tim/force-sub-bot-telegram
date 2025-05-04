@@ -1,6 +1,7 @@
 package org.telegram.forcesub.handler;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.telegram.forcesub.entity.Message;
 import org.telegram.forcesub.entity.MessageInformation;
@@ -28,6 +29,7 @@ public class StartCommand implements CommandHandlerProcessor {
     private final String botUsername;
     private final MessageService messageService;
     private final MappingText mappingText;
+    private final long DELAY_EACH_COPY_MESSAGE = 1000;
 
     public StartCommand(MessageService messageService,
                         SubscriptionService subscriptionService,
@@ -54,6 +56,7 @@ public class StartCommand implements CommandHandlerProcessor {
     }
 
     @Override
+    @Async
     public CompletableFuture<Void> process(Update update, TelegramClient telegramClient) {
         return CompletableFuture.runAsync(() -> {
             String messageText = update.getMessage().getText();
@@ -93,10 +96,14 @@ public class StartCommand implements CommandHandlerProcessor {
             String startUrl = String.format("https://t.me/%s?start=%s", botUsername, payload);
             sendMessageWithMarkup(chatId, formattedText, joinButton.joinButton(channelLinks, startUrl), telegramClient);
         } else {
-            // Process all messages in the list
             messages.forEach(message -> {
                 log.info("Processing message: {}", message);
-                copyMessage(message.getChatId(), message.getMessageId(), chatId, telegramClient);
+                try {
+                    copyMessage(message.getChatId(), message.getMessageId(), chatId, telegramClient);
+                    Thread.sleep(DELAY_EACH_COPY_MESSAGE);
+                } catch (InterruptedException e) {
+                    log.warn("Thread interrupted while sleeping: {}", e.getMessage());
+                }
             });
         }
     }

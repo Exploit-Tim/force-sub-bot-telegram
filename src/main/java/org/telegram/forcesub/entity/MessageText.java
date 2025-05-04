@@ -4,6 +4,12 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+
+/**
+ * This class retrieve all message in Database
+ * Based On Given Message Information
+ */
+
 @Document(collection = "messageTexts")
 @Builder
 @Data
