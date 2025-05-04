@@ -3,8 +3,10 @@ package org.telegram.forcesub.handler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.telegram.forcesub.entity.Message;
+import org.telegram.forcesub.service.AdminService;
 import org.telegram.forcesub.service.MessageService;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -14,19 +16,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+
+/**
+ * The CommandHandler to see the messageId
+ * Generate MessageID if they are not UUID
+ * Create Batch Processing MessageId if they send UUID of the messageId
+ */
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class GenerateIdMessage implements CommandHandlerProcessor {
+    /**
+     * Regex pattern for UUID validation.
+     */
     private static final Pattern UUID_PATTERN = Pattern.compile(
             "\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}\\b");
     private static final String ERROR_MESSAGES_NOT_FOUND = "Error: Salah satu messageId tidak ditemukan";
     private static final String ERROR_NO_MESSAGES_IN_RANGE = "Tidak Ada";
     private static final String ERROR_PROCESSING_MESSAGES = "Error Prosess Pesan";
     private static final String NEXT_MESSAGE_PROMPT = "\n\nKirim MessageId terakhir";
-
     private final MessageService messageService;
     private final Map<String, String> messageMap = new HashMap<>();
+    private final AdminService adminService;
 
     @Value("${data.message}")
     private String database;
@@ -47,12 +59,32 @@ public class GenerateIdMessage implements CommandHandlerProcessor {
         return "";
     }
 
+    /**
+     *
+     * The Main Method to handle message if they are not Command
+     * Generate UUID tho messageId and send The Link To File
+     * @param update         The update object from Telegram
+     * @param telegramClient The telegram client instance
+     */
+
     @Override
+    @Async
     public CompletableFuture<Void> process(Update update, TelegramClient telegramClient) {
         return CompletableFuture.runAsync(() -> processMessage(update, telegramClient));
     }
 
+    /**
+     * Process Message
+     * @param update
+     * @param telegramClient
+     */
+
     private void processMessage(Update update, TelegramClient telegramClient) {
+
+        if (adminService.isAdminExist(String.valueOf(update.getMessage().getChatId()))) {
+            sendMessage(update.getMessage().getChatId(), "Anda tidak memiliki akses", telegramClient);
+            return;
+        }
         if (!isValidUpdate(update)) {
             return;
         }
@@ -68,6 +100,12 @@ public class GenerateIdMessage implements CommandHandlerProcessor {
         processUuidMessage(update, telegramClient);
     }
 
+    /**
+     * This Method to handle null message, include joined User, Left user, Reaction, and more
+     * @param update
+     * @return
+     */
+
     private boolean isValidUpdate(Update update) {
         if (update.getMessage() == null) {
             log.warn("Update message is null");
@@ -75,9 +113,22 @@ public class GenerateIdMessage implements CommandHandlerProcessor {
         }
         return true;
     }
+
+    /**
+     * Detect UUID Message, if They Are UUID, bot process Batch Message
+     * @param text
+     * @return boolean
+     */
+
     private boolean isUuidMessage(String text) {
         return UUID_PATTERN.matcher(text).matches();
     }
+
+    /**
+     * Send the message Link if User is Authorized, as Owner or Admin
+     * @param update
+     * @param telegramClient
+     */
 
     private void handleAuthorizedUserMessage(Update update, TelegramClient telegramClient) {
         String messageId = update.getMessage().getMessageId().toString();
@@ -89,7 +140,8 @@ public class GenerateIdMessage implements CommandHandlerProcessor {
     private boolean isAuthorizedNonUuidMessage(Long chatId, String messageText) {
         boolean isAuthorized = chatId != null &&
                 (chatId.equals(Long.parseLong(database)) ||
-                        chatId.equals(Long.parseLong(ownerUsername)));
+                        chatId.equals(Long.parseLong(ownerUsername)) ||
+                        adminService.countAllAdmin().contains(chatId.toString()));
         boolean isNotUuid = messageText == null || !isUuidMessage(messageText);
         return isAuthorized && isNotUuid;
     }

@@ -64,5 +64,14 @@ public class UserService {
         return userRepository.existsByChatIdAndChannelIdAndExpiredAtAfter(userId, channelId, Instant.now().toEpochMilli());
     }
 
+    public Set<String> getAllUsers() {
+        Set<User> users = new HashSet<>(userRepository.findAll());
+        Set<String> userIds = new HashSet<>();
+        for (User user : users) {
+            userIds.add(user.getChatId());
+        }
+        return userIds;
+    }
+
 }
 

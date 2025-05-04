@@ -3,6 +3,7 @@ package org.telegram.forcesub.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.telegram.forcesub.handler.CallbackHandler;
 import org.telegram.forcesub.handler.CommandHandler;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
@@ -20,11 +21,13 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
 
     private final TelegramClient telegramClient;
     private final CommandHandler commandHandler;
+    private final CallbackHandler callbackHandler;
 
-    TelegramBot(@Value("${bot.token}") String botToken, CommandHandler commandHandler) {
+    TelegramBot(@Value("${bot.token}") String botToken, CommandHandler commandHandler, CallbackHandler callbackHandler) {
         this.botToken = botToken;
         this.telegramClient = new OkHttpTelegramClient(botToken);
         this.commandHandler = commandHandler;
+        this.callbackHandler = callbackHandler;
     }
 
 
@@ -45,7 +48,11 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
 
     @Async
     public CompletableFuture<Void> sendMessage(Update update, TelegramClient telegramClient) {
-        return commandHandler.handle(update, telegramClient);
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            return commandHandler.handle(update, telegramClient);
+        } else {
+            return callbackHandler.handle(update, telegramClient);
+        }
     }
 
 }

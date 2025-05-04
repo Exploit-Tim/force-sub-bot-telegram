@@ -6,6 +6,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 
+/**
+ * The Class to mapping message and save it into mongoDB database
+ * It's only can save Message ID, and Chat ID, not media or text
+ * To Save Storage
+ *
+ */
+
 @Document(collection = "messages")
 @Data
 @Builder
