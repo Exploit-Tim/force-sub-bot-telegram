@@ -24,6 +24,7 @@ channel.id=
 bot.id=
 admin.id=
 data.message=
+protect.content=true
 
 start.message.not.join=
 start.message.after.join=

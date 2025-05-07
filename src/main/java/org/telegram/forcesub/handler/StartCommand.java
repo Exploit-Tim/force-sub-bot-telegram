@@ -30,19 +30,22 @@ public class StartCommand implements CommandHandlerProcessor {
     private final MessageService messageService;
     private final MappingText mappingText;
     private final long DELAY_EACH_COPY_MESSAGE = 1000;
+    private final boolean IS_PROTECT_CONTENT;
 
     public StartCommand(MessageService messageService,
                         SubscriptionService subscriptionService,
                         GetChannelLinkService getChannelLinkService,
                         JoinButton joinButton,
                         @Value("${bot.username}") String botUsername,
-                        MappingText mappingText) {
+                        MappingText mappingText,
+                        @Value("${data.message}") String protectContent) {
         this.messageService = messageService;
         this.subscriptionService = subscriptionService;
         this.getChannelLinkService = getChannelLinkService;
         this.joinButton = joinButton;
         this.botUsername = botUsername;
         this.mappingText = mappingText;
+        this.IS_PROTECT_CONTENT = Boolean.getBoolean(protectContent);
     }
 
     @Override
@@ -99,7 +102,7 @@ public class StartCommand implements CommandHandlerProcessor {
             messages.forEach(message -> {
                 log.info("Processing message: {}", message);
                 try {
-                    copyMessage(message.getChatId(), message.getMessageId(), chatId, telegramClient);
+                    copyMessage(message.getChatId(), message.getMessageId(), chatId, IS_PROTECT_CONTENT, telegramClient);
                     Thread.sleep(DELAY_EACH_COPY_MESSAGE);
                 } catch (InterruptedException e) {
                     log.warn("Thread interrupted while sleeping: {}", e.getMessage());
