@@ -48,7 +48,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
 
     @Async
     public CompletableFuture<Void> sendMessage(Update update, TelegramClient telegramClient) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage()) {
             return commandHandler.handle(update, telegramClient);
         } else {
             return callbackHandler.handle(update, telegramClient);
