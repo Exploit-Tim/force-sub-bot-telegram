@@ -2,6 +2,7 @@ package org.telegram.forcesub.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -83,11 +84,12 @@ public interface CommandHandlerProcessor {
      * @param bot The telegram client instance
      */
     
-    default void copyMessage(String fromChatId, String messageId, Long toChatId, TelegramClient bot) {
+    default void copyMessage(String fromChatId, String messageId, Long toChatId,Boolean protect, TelegramClient bot) {
         CopyMessage copy = CopyMessage.builder()
                 .fromChatId(fromChatId)
                 .messageId(Integer.parseInt(messageId))
                 .chatId(toChatId)
+                .protectContent(protect)
                 .build();
         try {
             bot.execute(copy);
