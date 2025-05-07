@@ -57,10 +57,9 @@ public class GenerateIdMessage implements CommandHandlerProcessor {
             return;
         }
 
-        String messageText = update.getMessage().getText();
         Long chatId = update.getMessage().getChatId();
 
-        if (isAuthorizedNonUuidMessage(chatId, messageText)) {
+        if (isAuthorizedNonUuidMessage(chatId, update.getMessage().getText())) {
             handleAuthorizedUserMessage(update, telegramClient);
             return;
         }
@@ -195,4 +194,5 @@ public class GenerateIdMessage implements CommandHandlerProcessor {
                 return Long.parseLong(firstId) > Long.parseLong(secondId) ? firstId : secondId;
             }
         }
+
 }

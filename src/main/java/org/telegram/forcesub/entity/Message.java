@@ -24,5 +24,5 @@ public class Message {
     @Indexed()
     private String uuid;
     private String messageId;
-    private String chatId;
+    private String chatId;// Store the Telegram file ID for the media
 }
