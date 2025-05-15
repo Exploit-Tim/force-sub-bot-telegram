@@ -92,6 +92,7 @@ owner.username=
 owner.userid=
 channel.id=
 bot.id=
+admin.id=
 data.message=
 start.message.not.join=
 start.message.after.join=
