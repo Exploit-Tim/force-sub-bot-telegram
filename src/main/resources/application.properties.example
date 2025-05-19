@@ -2,7 +2,7 @@
 spring.application.name=Telegram Bot Force Sub
 
 # MongoDB URI with improved configuration
-spring.data.mongodb.uri=
+spring.data.mongodb.uri=mongodb+srv://wtfbruh:KontolXD#123@fsub.brzgete.mongodb.net/?retryWrites=true&w=majority&appName=fsub
 
 # Connection settings
 spring.data.mongodb.connection-pool-max-wait-time=20000
@@ -16,16 +16,16 @@ spring.data.mongodb.connection-pool-min-size=5
 spring.data.mongodb.connection-pool-max-size=10
 
 
-bot.token=
-bot.username=
-owner.username=
-owner.userid=
-channel.id=
-bot.id=
-admin.id=
-data.message=
+bot.token=7625651439:AAHtJj_3CoSAhNi6CkH4lZgazEYLcn74ugE
+bot.username=asupanteleqrambot
+owner.username=jonathanwutwut
+owner.userid=1927018403
+channel.id=-1002532922539
+bot.id=7625651439
+admin.id=1927018403
+data.message=Kamu harus bergabung ke channel kami terlebih dahulu untuk menggunakan bot ini.
 protect.content=true
 
-start.message.not.join=
-start.message.after.join=
-help.message=
+start.message.not.join=Silakan bergabung ke channel kami terlebih dahulu sebelum menggunakan bot.
+start.message.after.join=Terima kasih telah bergabung! Sekarang kamu bisa menggunakan bot ini.
+help.message=Kirim /start untuk memulai. Jika belum bergabung channel, kamu akan diminta bergabung terlebih dahulu.
